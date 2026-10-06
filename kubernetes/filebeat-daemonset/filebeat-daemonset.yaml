@@ -1,0 +1,91 @@
+# Filebeat DaemonSet for Kind/any K8s. Replace HOST_IP with your host machine IP.
+apiVersion: v1
+kind: ServiceAccount
+metadata: {name: filebeat, namespace: kube-system}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata: {name: filebeat}
+rules:
+  - apiGroups: [""]
+    resources: [namespaces, pods, nodes]
+    verbs: [get, list, watch]
+  - apiGroups: ["apps"]
+    resources: [replicasets]
+    verbs: [get, list, watch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata: {name: filebeat}
+subjects:
+  - {kind: ServiceAccount, name: filebeat, namespace: kube-system}
+roleRef: {kind: ClusterRole, name: filebeat, apiGroup: rbac.authorization.k8s.io}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: filebeat-config, namespace: kube-system}
+data:
+  filebeat.yml: |-
+    filebeat.inputs:
+      - type: filestream
+        id: kubernetes-container-logs
+        paths:
+          - /var/log/containers/*.log
+        parsers:
+          - container: ~
+        prospector.scanner.symlinks: true
+        processors:
+          - add_kubernetes_metadata:
+              host: ${NODE_NAME}
+              matchers:
+                - logs_path:
+                    logs_path: "/var/log/containers/"
+    setup.ilm.enabled: false
+    setup.template.name: "k8s-logs"
+    setup.template.pattern: "k8s-logs-*"
+    output.elasticsearch:
+      hosts: ["http://HOST_IP:9200"]
+      index: "k8s-logs-%{+yyyy.MM.dd}"
+    logging.level: info
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: filebeat
+  namespace: kube-system
+  labels: {app: filebeat}
+spec:
+  selector:
+    matchLabels: {app: filebeat}
+  template:
+    metadata:
+      labels: {app: filebeat}
+    spec:
+      serviceAccountName: filebeat
+      tolerations:
+        - operator: Exists          # also run on control-plane nodes
+      containers:
+        - name: filebeat
+          image: docker.elastic.co/beats/filebeat:8.19.0
+          args: ["-c", "/etc/filebeat.yml", "-e"]
+          env:
+            - name: NODE_NAME
+              valueFrom: {fieldRef: {fieldPath: spec.nodeName}}
+          securityContext: {runAsUser: 0}
+          resources:
+            requests: {cpu: 100m, memory: 100Mi}
+            limits: {memory: 300Mi}
+          volumeMounts:
+            - {name: config, mountPath: /etc/filebeat.yml, subPath: filebeat.yml, readOnly: true}
+            - {name: data, mountPath: /usr/share/filebeat/data}
+            - {name: varlog, mountPath: /var/log, readOnly: true}
+            - {name: dockercontainers, mountPath: /var/lib/docker/containers, readOnly: true}
+      volumes:
+        - name: config
+          configMap: {name: filebeat-config, defaultMode: 0640}
+        - name: data
+          hostPath: {path: /var/lib/filebeat-data, type: DirectoryOrCreate}
+        - name: varlog
+          hostPath: {path: /var/log}
+        - name: dockercontainers
+          hostPath: {path: /var/lib/docker/containers}

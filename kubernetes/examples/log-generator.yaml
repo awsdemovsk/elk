@@ -1,0 +1,18 @@
+# Generates INFO/WARN/ERROR lines for dashboard practice
+apiVersion: v1
+kind: Pod
+metadata: {name: log-generator}
+spec:
+  containers:
+    - name: gen
+      image: busybox
+      command: ["/bin/sh","-c"]
+      args:
+        - |
+          i=0; while true; do
+            i=$((i+1))
+            case $((i%5)) in
+              0) echo "ERROR payment failed order=$i";;
+              1) echo "WARN slow response ms=900";;
+              *) echo "INFO request ok order=$i";;
+            esac; sleep 2; done

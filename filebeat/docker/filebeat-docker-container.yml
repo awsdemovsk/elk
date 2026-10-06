@@ -1,0 +1,15 @@
+# Option A: read Docker json-file logs directly (run Filebeat on the Docker host)
+filebeat.inputs:
+  - type: filestream
+    id: docker-logs
+    paths: [/var/lib/docker/containers/*/*.log]
+    parsers:
+      - container: ~
+    processors:
+      - add_docker_metadata: ~
+setup.ilm.enabled: false
+setup.template.name: "docker-logs"
+setup.template.pattern: "docker-logs-*"
+output.elasticsearch:
+  hosts: ["http://localhost:9200"]
+  index: "docker-logs-%{+yyyy.MM.dd}"

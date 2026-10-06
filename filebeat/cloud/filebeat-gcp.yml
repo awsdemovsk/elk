@@ -1,0 +1,14 @@
+# Filebeat GCP module: Log Router sink -> Pub/Sub topic + subscription -> Filebeat
+- module: gcp
+  audit:
+    enabled: true
+    var.project_id: my-project
+    var.topic: gcp-logs-topic
+    var.subscription_name: filebeat-gcp-audit-sub
+    var.credentials_file: /etc/filebeat/gcp-sa.json
+  vpcflow:
+    enabled: true
+    var.project_id: my-project
+    var.topic: gcp-vpcflow-topic
+    var.subscription_name: filebeat-gcp-vpc-sub
+    var.credentials_file: /etc/filebeat/gcp-sa.json

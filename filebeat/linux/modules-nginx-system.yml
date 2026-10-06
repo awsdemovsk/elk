@@ -1,0 +1,7 @@
+# Equivalent of modules.d/nginx.yml and modules.d/system.yml
+- module: nginx
+  access: {enabled: true, var.paths: ["/var/log/nginx/access.log*"]}
+  error:  {enabled: true, var.paths: ["/var/log/nginx/error.log*"]}
+- module: system
+  syslog: {enabled: true}
+  auth:   {enabled: true}

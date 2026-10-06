@@ -1,0 +1,11 @@
+# Alternative to the static input: autodiscover with hints (annotate pods to control parsing)
+filebeat.autodiscover:
+  providers:
+    - type: kubernetes
+      node: ${NODE_NAME}
+      hints.enabled: true
+      hints.default_config:
+        type: filestream
+        id: kubernetes-container-logs-${data.kubernetes.pod.uid}-${data.kubernetes.container.name}
+        paths: ["/var/log/containers/*${data.kubernetes.container.id}.log"]
+        parsers: [{container: ~}]

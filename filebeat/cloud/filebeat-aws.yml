@@ -1,0 +1,12 @@
+# Filebeat AWS module: S3-backed logs (ALB, CloudTrail, ...) via SQS notifications
+- module: aws
+  alb:
+    enabled: true
+    var.queue_url: https://sqs.ap-south-1.amazonaws.com/<ACCOUNT_ID>/alb-logs-queue
+    var.credential_profile_name: default
+  cloudtrail:
+    enabled: true
+    var.queue_url: https://sqs.ap-south-1.amazonaws.com/<ACCOUNT_ID>/cloudtrail-queue
+  cloudwatch:
+    enabled: true
+    var.queue_url: https://sqs.ap-south-1.amazonaws.com/<ACCOUNT_ID>/cw-export-queue

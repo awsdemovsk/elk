@@ -1,0 +1,22 @@
+# Linux system + auth logs (Debian/Ubuntu and RHEL families)
+filebeat.inputs:
+  - type: filestream
+    id: syslog
+    paths: [/var/log/syslog, /var/log/messages]
+    fields: {log_type: syslog}
+    fields_under_root: true
+  - type: filestream
+    id: auth
+    paths: [/var/log/auth.log, /var/log/secure]
+    fields: {log_type: auth}
+    fields_under_root: true
+
+processors:
+  - add_host_metadata: ~
+
+setup.ilm.enabled: false
+setup.template.name: "linux-logs"
+setup.template.pattern: "linux-logs-*"
+output.elasticsearch:
+  hosts: ["http://localhost:9200"]
+  index: "linux-logs-%{+yyyy.MM.dd}"

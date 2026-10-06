@@ -1,0 +1,9 @@
+# For pod-restart dashboard/alert practice
+apiVersion: v1
+kind: Pod
+metadata: {name: crashy}
+spec:
+  containers:
+    - name: crashy
+      image: busybox
+      command: ["/bin/sh","-c","echo starting; sleep 5; exit 1"]

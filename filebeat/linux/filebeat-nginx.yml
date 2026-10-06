@@ -1,0 +1,20 @@
+# Nginx access/error logs (host install).
+# Easiest: filebeat modules enable nginx ; filebeat setup -e  (parsed ECS fields + dashboards)
+# Manual alternative below keeps raw lines.
+filebeat.inputs:
+  - type: filestream
+    id: nginx-access
+    paths: [/var/log/nginx/access.log]
+    fields: {log_type: nginx_access}
+    fields_under_root: true
+  - type: filestream
+    id: nginx-error
+    paths: [/var/log/nginx/error.log]
+    fields: {log_type: nginx_error}
+    fields_under_root: true
+setup.ilm.enabled: false
+setup.template.name: "nginx-logs"
+setup.template.pattern: "nginx-logs-*"
+output.elasticsearch:
+  hosts: ["http://localhost:9200"]
+  index: "nginx-logs-%{+yyyy.MM.dd}"

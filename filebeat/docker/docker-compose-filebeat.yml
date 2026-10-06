@@ -1,0 +1,10 @@
+# Merge into lab/docker-compose.yml (same network) or run with the same project name
+services:
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.19.0
+    user: root
+    command: ["filebeat", "-e", "--strict.perms=false"]
+    volumes:
+      - ./filebeat-docker-autodiscover.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro

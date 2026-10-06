@@ -1,0 +1,18 @@
+# Filebeat Azure module: Diagnostic Settings -> Event Hub -> Filebeat
+- module: azure
+  activitylogs:
+    enabled: true
+    var:
+      eventhub: "insights-operational-logs"
+      consumer_group: "$Default"
+      connection_string: "<EVENTHUB_CONNECTION_STRING>"
+      storage_account: "<storage-for-checkpoints>"
+      storage_account_key: "<key>"
+  platformlogs:
+    enabled: true
+    var:
+      eventhub: "insights-logs-platform"
+      consumer_group: "$Default"
+      connection_string: "<EVENTHUB_CONNECTION_STRING>"
+      storage_account: "<storage>"
+      storage_account_key: "<key>"
